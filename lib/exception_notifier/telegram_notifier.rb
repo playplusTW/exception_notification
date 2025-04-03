@@ -116,11 +116,9 @@ module ExceptionNotifier
         text += "\n"
 
         request_info = {
-          'Request Method' => env['REQUEST_METHOD'],
-          'Request URL' => env['REQUEST_URI'],
-          'Request Query' => env['QUERY_STRING'],
+          'Request' => "#{env['REQUEST_METHOD']} #{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
+          'Parameters' => env['action_controller.instance']&.params&.to_h,
           'Request IP' => env['REMOTE_ADDR'],
-          'Request Host' => env['HTTP_HOST'],
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }
 

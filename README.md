@@ -5,21 +5,18 @@
 
 ---
 
-The Exception Notification gem provides a set of [notifiers](#notifiers) for sending notifications when errors occur in a Rack/Rails application. The built-in notifiers can deliver notifications by [email](docs/notifiers/email.md), [HipChat](docs/notifiers/hipchat.md), [Slack](docs/notifiers/slack.md), [Mattermost](docs/notifiers/mattermost.md), [Teams](docs/notifiers/teams.md), [IRC](docs/notifiers/irc.md), [Amazon SNS](docs/notifiers/sns.md), [Google Chat](docs/notifiers/google_chat.md), [Datadog](docs/notifiers/datadog.md) or via custom [WebHooks](docs/notifiers/webhook.md).
+The Exception Notification gem provides a set of [notifiers](#notifiers) for sending notifications when errors occur in a Rack/Rails application. The built-in notifiers can deliver notifications by [email](docs/notifiers/email.md), [HipChat](docs/notifiers/hipchat.md), [Slack](docs/notifiers/slack.md), [Mattermost](docs/notifiers/mattermost.md), [Teams](docs/notifiers/teams.md), [IRC](docs/notifiers/irc.md), [Amazon SNS](docs/notifiers/sns.md), [Google Chat](docs/notifiers/google_chat.md), [Datadog](docs/notifiers/datadog.md), [Telegram](docs/notifiers/telegram.md) or via custom [WebHooks](docs/notifiers/webhook.md).
 
 There's a [Railscast (2011) about Exception Notification](http://railscasts.com/episodes/104-exception-notifications-revised) you can see that may help you getting started.
-
 
 ## Gem status
 
 This gem is not under active development, but is maintained. There are more robust and modern solutions for exception handling. But this code was [extracted from Rails about 15+ years ago](https://github.com/rails/exception_notification) and still has lots of value for some applications.
 
-
 ## Requirements
 
-* Ruby 3.2 or greater
-* If using Rails, version 7.1 or greater. (Sinatra or other Rack-based applications are supported.)
-
+- Ruby 3.2 or greater
+- If using Rails, version 7.1 or greater. (Sinatra or other Rack-based applications are supported.)
 
 ## Getting Started
 
@@ -48,6 +45,7 @@ end
 ```
 
 The generated initializer file will include this require:
+
 ```ruby
 require "exception_notification/rails"
 ```
@@ -66,7 +64,6 @@ The generated file adds an `email` notifier:
 
 **Note**: In order to enable delivery notifications by email, make sure you have [ActionMailer configured](docs/notifiers/email.md#actionmailer-configuration).
 
-
 #### Adding middleware manually
 
 Alternatively, if for some reason you don't want to `require "exception_notification/rails"`, you can manually add the middleware, like this:
@@ -84,11 +81,9 @@ This is the older way of configuring ExceptionNotification (which prior to versi
 
 Options passed to the `ExceptionNotification::Rack` middleware in this way are translated to the equivalent configuration options for the `ExceptionNotification.configure` of configuring (compare to the [Rails](#rails) example above).
 
-
 ### Rack/Sinatra
 
 In order to use ExceptionNotification with Sinatra, please take a look in the [example application](examples/sinatra).
-
 
 ### Custom Data, e.g. Current User
 
@@ -121,7 +116,6 @@ The current user will show up in your email, in a new section titled "Data".
 
 For more control over the display of custom data, see "Email notifier -> Options -> sections" below.
 
-
 ### Filtering parameters
 
 Since the error notification contains the full request parameters, you may want to filter out sensitive information. The `filter_parameters` in Rails can be used to filter out sensitive information from the request parameters.
@@ -132,30 +126,29 @@ config.filter_parameters += [:secret_details, :credit_card_number]
 
 See the Rails documentation for more information: https://guides.rubyonrails.org/configuring.html#config-filter-parameters
 
-
 ## Notifiers
 
 ExceptionNotification relies on notifiers to deliver notifications when errors occur in your applications. By default the following notifiers are available:
 
-* [Datadog notifier](docs/notifiers/datadog.md)
-* [Email notifier](docs/notifiers/email.md)
-* [HipChat notifier](docs/notifiers/hipchat.md)
-* [IRC notifier](docs/notifiers/irc.md)
-* [Slack notifier](docs/notifiers/slack.md)
-* [Mattermost notifier](docs/notifiers/mattermost.md)
-* [Teams notifier](docs/notifiers/teams.md)
-* [Amazon SNS](docs/notifiers/sns.md)
-* [Google Chat notifier](docs/notifiers/google_chat.md)
-* [WebHook notifier](docs/notifiers/webhook.md)
+- [Datadog notifier](docs/notifiers/datadog.md)
+- [Email notifier](docs/notifiers/email.md)
+- [HipChat notifier](docs/notifiers/hipchat.md)
+- [IRC notifier](docs/notifiers/irc.md)
+- [Slack notifier](docs/notifiers/slack.md)
+- [Mattermost notifier](docs/notifiers/mattermost.md)
+- [Teams notifier](docs/notifiers/teams.md)
+- [Amazon SNS](docs/notifiers/sns.md)
+- [Google Chat notifier](docs/notifiers/google_chat.md)
+- [Telegram notifier](docs/notifiers/telegram.md)
+- [WebHook notifier](docs/notifiers/webhook.md)
 
 You also can implement your own [custom notifier](docs/notifiers/custom.md).
-
 
 ## Error Grouping
 
 In general, ExceptionNotification will send a notification when every error occurs, which may result in a problem: if your site has a high throughput and a particular error is raised frequently, you will receive too many notifications. During a short period of time, your mail box may be filled with thousands of exception mails, or your mail server may even become slow. To prevent this, you can choose to group errors by setting the `:error_grouping` option to `true`.
 
-Error grouping uses a default formula of `Math.log2(errors_count)` to determine whether to send the notification, based on the accumulated error count for each specific exception. This makes the notifier only send a notification when the count is: 1, 2, 4, 8, 16, 32, 64, 128, ..., (2**n). You can use `:notification_trigger` to override this default formula.
+Error grouping uses a default formula of `Math.log2(errors_count)` to determine whether to send the notification, based on the accumulated error count for each specific exception. This makes the notifier only send a notification when the count is: 1, 2, 4, 8, 16, 32, 64, 128, ..., (2\*\*n). You can use `:notification_trigger` to override this default formula.
 
 The following code shows the available options to configure error grouping:
 
@@ -179,23 +172,21 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
   # notification_trigger: lambda { |exception, count| count % 10 == 0 }
 ```
 
-
 ## Ignore Exceptions
 
 You can choose to ignore certain exceptions, which will make ExceptionNotification avoid sending notifications for those specified. There are three ways of specifying which exceptions to ignore:
 
-* `:ignore_exceptions` - By exception class (i.e. ignore RecordNotFound ones)
+- `:ignore_exceptions` - By exception class (i.e. ignore RecordNotFound ones)
 
-* `:ignore_crawlers`   - From crawler (i.e. ignore ones originated by Googlebot)
+- `:ignore_crawlers` - From crawler (i.e. ignore ones originated by Googlebot)
 
-* `:ignore_if`         - Custom (i.e. ignore exceptions that satisfy some condition)
+- `:ignore_if` - Custom (i.e. ignore exceptions that satisfy some condition)
 
-* `:ignore_notifer_if` - Custom (i.e. let each notifier ignore exceptions if by-notifier condition is satisfied)
-
+- `:ignore_notifer_if` - Custom (i.e. let each notifier ignore exceptions if by-notifier condition is satisfied)
 
 ### :ignore_exceptions
 
-*Array of strings, default: %w{ActiveRecord::RecordNotFound Mongoid::Errors::DocumentNotFound AbstractController::ActionNotFound ActionController::RoutingError ActionController::UnknownFormat ActionDispatch::Http::MimeNegotiation::InvalidType Rack::Utils::InvalidParameterError}*
+_Array of strings, default: %w{ActiveRecord::RecordNotFound Mongoid::Errors::DocumentNotFound AbstractController::ActionNotFound ActionController::RoutingError ActionController::UnknownFormat ActionDispatch::Http::MimeNegotiation::InvalidType Rack::Utils::InvalidParameterError}_
 
 Ignore specified exception types. To achieve that, you should use the `:ignore_exceptions` option, like this:
 
@@ -209,12 +200,11 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
                                         }
 ```
 
-The above will make ExceptionNotifier ignore a *TemplateError* exception, plus the ones ignored by default.
-
+The above will make ExceptionNotifier ignore a _TemplateError_ exception, plus the ones ignored by default.
 
 ### :ignore_crawlers
 
-*Array of strings, default: []*
+_Array of strings, default: []_
 
 In some cases you may want to avoid getting notifications from exceptions made by crawlers. To prevent sending those unwanted notifications, use the `:ignore_crawlers` option like this:
 
@@ -228,10 +218,9 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
                                         }
 ```
 
-
 ### :ignore_if
 
-*Lambda, default: nil*
+_Lambda, default: nil_
 
 You can ignore exceptions based on a condition. Take a look:
 
@@ -247,10 +236,9 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
 
 You can make use of both the environment and the exception inside the lambda to decide wether to avoid or not sending the notification.
 
-
 ### :ignore_notifier_if
 
-* Hash of Lambda, default: nil*
+- Hash of Lambda, default: nil\*
 
 In case you want a notifier to ignore certain exceptions, but don't want other notifiers to skip them, you can set by-notifier ignore options.
 By setting below, each notifier will ignore exceptions when its corresponding condition is met.
@@ -274,20 +262,17 @@ Rails.application.config.middleware.use ExceptionNotification::Rack,
 
 To customize each condition, you can make use of environment and the exception object inside the lambda.
 
-
 ## Rack X-Cascade Header
 
 Some rack apps (Rails in particular) utilize the "X-Cascade" header to pass the request-handling responsibility to the next middleware in the stack.
 
 Rails' routing middleware uses this strategy, rather than raising an exception, to handle routing errors (e.g. 404s); to be notified whenever a 404 occurs, set this option to "false."
 
-
 ### :ignore_cascade_pass
 
-*Boolean, default: true*
+_Boolean, default: true_
 
 Set to false to trigger notifications when another rack middleware sets the "X-Cascade" header to "pass."
-
 
 ## Background Jobs
 
@@ -296,7 +281,6 @@ The ExceptionNotification middleware can only detect notifications that occur du
 Examples of background jobs include jobs triggered from a cron file or from a queue.
 
 ExceptionNotificatior can be configured to automatically notify of exceptions occurring in most common types of Rails background jobs such as [rake tasks](#rake-tasks). Additionally, it provides optional integrations for some 3rd-party libraries such as [Resque and Sidekiq](#resquesidekiq). And of course you can manually trigger a notification if no integration is provided.
-
 
 ### Rails runner
 
@@ -308,7 +292,6 @@ require 'exception_notification/rails'
 
 (Requiring it from an initializer is too late, because this depends on the `runner` callback, and that will have already been fired _before_ any initializers run.)
 
-
 ### Rake tasks
 
 If you've already added `require 'exception_notification/rails'` to your `config/application.rb` as described [above](#rails-runner), then there's nothing further you need to do. (That Engine has a `rake_tasks` callback which automatically requires the file below.)
@@ -318,7 +301,6 @@ Alternatively, you can add this line to your `config/initializers/exception_noti
 ```ruby
 require 'exception_notification/rake'
 ```
-
 
 ### Manually notify of exceptions
 
@@ -390,9 +372,153 @@ Please read first the [Contributing Guide](CONTRIBUTING.md).
 
 And always follow the [code of conduct](CODE_OF_CONDUCT.md).
 
-
 ## License
 
 Copyright (c) 2005 Jamis Buck, released under the [MIT license](http://www.opensource.org/licenses/MIT).
 
 Maintainer: [Kevin McPhillips](https://github.com/kmcphillips)
+
+# Exception Notification Telegram
+
+Telegram notifier for [Exception Notification](https://github.com/smartinez87/exception_notification) gem.
+
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'exception_notification_telegram'
+```
+
+And then execute:
+
+```bash
+$ bundle install
+```
+
+## Usage
+
+### Rails
+
+In your Rails application, you can configure the notifier in `config/initializers/exception_notification.rb`:
+
+```ruby
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  telegram: {
+    token: 'YOUR_TELEGRAM_BOT_TOKEN',
+    chat_id: 'YOUR_CHAT_ID',
+    username: 'Bot Name', # 可選
+    icon_url: 'https://example.com/icon.png', # 可選
+    icon_emoji: ':robot_face:', # 可選
+    backtrace_lines: 10, # 可選，預設為 10
+    additional_parameters: { # 可選，額外的 Telegram API 參數
+      disable_web_page_preview: true
+    },
+    ignore_data_if: ->(k, v) { v.nil? || v.empty? }, # 可選，過濾資料的條件
+    additional_fields: [ # 可選，額外的欄位
+      { title: 'Environment', value: Rails.env },
+      { title: 'Version', value: '1.0.0' }
+    ]
+  }
+```
+
+### Standalone
+
+You can also use the notifier in a standalone application:
+
+```ruby
+require 'exception_notification/telegram_notifier'
+
+notifier = ExceptionNotifier::TelegramNotifier.new(
+  token: 'YOUR_TELEGRAM_BOT_TOKEN',
+  chat_id: 'YOUR_CHAT_ID'
+)
+
+begin
+  # 你的程式碼
+rescue => exception
+  notifier.call(exception)
+end
+```
+
+## Configuration Options
+
+| Option                  | Description              | Required | Default |
+| ----------------------- | ------------------------ | -------- | ------- |
+| `token`                 | Telegram Bot Token       | Yes      | -       |
+| `chat_id`               | Telegram Chat ID         | Yes      | -       |
+| `username`              | Bot 的顯示名稱           | No       | -       |
+| `icon_url`              | Bot 的圖示 URL           | No       | -       |
+| `icon_emoji`            | Bot 的圖示 Emoji         | No       | -       |
+| `backtrace_lines`       | 顯示的堆疊追蹤行數       | No       | 10      |
+| `additional_parameters` | 額外的 Telegram API 參數 | No       | `{}`    |
+| `ignore_data_if`        | 過濾資料的條件           | No       | -       |
+| `additional_fields`     | 額外的欄位               | No       | `[]`    |
+
+## Message Format
+
+Telegram notifier 會發送格式化的訊息，包含以下資訊：
+
+1. 錯誤類型
+2. 錯誤訊息
+3. 主機名稱
+4. 堆疊追蹤（如果有的話）
+5. 請求資訊（如果有的話）
+6. 環境資料
+7. 額外欄位
+
+訊息使用 Markdown 格式，支援粗體、斜體和程式碼區塊。
+
+## Development
+
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+## Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/your-username/exception_notification_telegram. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/your-username/exception_notification_telegram/blob/master/CODE_OF_CONDUCT.md).
+
+## License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+## Code of Conduct
+
+Everyone interacting in the ExceptionNotificationTelegram project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/your-username/exception_notification_telegram/blob/master/CODE_OF_CONDUCT.md).
+
+# Exception Notification (Fork)
+
+這是 [Exception Notification](https://github.com/kmcphillips/exception_notification) 的 fork 版本，加入了 Telegram notifier 支援。
+
+## Installation
+
+### 使用 Fork 版本
+
+在您的 Gemfile 中加入：
+
+```ruby
+gem 'exception_notification',
+    git: 'git@github.com:playplusTW/exception_notification.git',
+    branch: 'master'  # 或您想要使用的分支
+```
+
+然後執行：
+
+```bash
+$ bundle install
+```
+
+### 安裝依賴套件
+
+由於 Telegram notifier 需要額外的依賴，請在您的 Gemfile 中加入：
+
+```ruby
+gem 'telegram-bot-ruby', '>= 0.19.0'
+```
+
+然後執行：
+
+```bash
+$ bundle install
+```

@@ -81,9 +81,10 @@ module ExceptionNotifier
       end
 
       if @additional_fields
-        @additional_fields.each do |field|
-          text += "\n\n*#{escape_markdown(field[:title])}:* #{escape_markdown(field[:value])}"
-        end
+        additional_string = @additional_fields.map do |field|
+          "#{escape_markdown(field[:title])}: #{escape_markdown(field[:value])}"
+        end.join("\n")
+        text += "\n\n*Additional Info:*\n```\n#{additional_string}\n```"
       end
 
       text

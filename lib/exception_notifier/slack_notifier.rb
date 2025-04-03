@@ -118,7 +118,10 @@ module ExceptionNotifier
         fields << { title: 'Data', value: "```#{data_string}```" }
       end
 
-      fields.concat(@additional_fields) if @additional_fields
+      if @additional_fields
+        additional_string = @additional_fields.map { |field| "#{field[:title]}: #{field[:value]}" }.join("\n")
+        fields << { title: 'Additional Info', value: "```#{additional_string}```" }
+      end
 
       fields
     end

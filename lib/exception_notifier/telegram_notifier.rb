@@ -117,7 +117,8 @@ module ExceptionNotifier
         data = options[:data] || {}
         text = "#{exception_name} *occurred in background*\n"
       else
-        env['exception_notifier.exception_data'] || {}
+        exception_data = env['exception_notifier.exception_data']
+        exception_data = exception_data.to_h if exception_data.respond_to?(:to_h)
         data = options[:data] || {}
 
         kontroller = env['action_controller.instance']
@@ -137,7 +138,8 @@ module ExceptionNotifier
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }
 
-        data.merge!(request_info)
+        data = data.merge(request_info)
+        data = data.merge(exception_data) if exception_data.is_a?(Hash)
       end
 
       [text, data]

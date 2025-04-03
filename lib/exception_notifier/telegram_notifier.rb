@@ -118,7 +118,6 @@ module ExceptionNotifier
         request_info = {
           'Request Method' => env['REQUEST_METHOD'],
           'Request URL' => env['REQUEST_URI'],
-          'Request Path' => env['PATH_INFO'],
           'Request Query' => env['QUERY_STRING'],
           'Request IP' => env['REMOTE_ADDR'],
           'Request Host' => env['HTTP_HOST'],

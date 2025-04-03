@@ -76,8 +76,20 @@ module ExceptionNotifier
 
       unless data.empty?
         deep_reject(data, @ignore_data_if) if @ignore_data_if.is_a?(Proc)
-        data_string = data.map { |k, v| "#{escape_markdown(k)}: #{escape_markdown(v)}" }.join("\n")
-        text += "\n\n*Data:*\n```\n#{data_string}\n```"
+
+        # 分離 request_info 和 extra_data
+        request_info = data.select { |k, _| k.start_with?('Request') || k == 'Parameters' || k == 'Current' }
+        extra_data = data.reject { |k, _| k.start_with?('Request') || k == 'Parameters' || k == 'Current' }
+
+        if request_info.any?
+          request_string = request_info.map { |k, v| "#{escape_markdown(k)}: #{escape_markdown(v)}" }.join("\n")
+          text += "\n\n*Data:*\n```\n#{request_string}\n```"
+        end
+
+        if extra_data.any?
+          extra_string = extra_data.map { |k, v| "#{escape_markdown(k)}: #{escape_markdown(v)}" }.join("\n")
+          text += "\n\n*Extra Data:*\n```\n#{extra_string}\n```"
+        end
       end
 
       if @additional_fields

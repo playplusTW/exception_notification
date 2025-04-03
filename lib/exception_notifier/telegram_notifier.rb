@@ -28,7 +28,7 @@ module ExceptionNotifier
     end
 
     def call(exception, options = {})
-      clean_message = exception.message.tr('`', "'")
+      clean_message = escape_markdown(exception.message)
       text = format_message(exception, clean_message, options)
 
       return unless valid?
@@ -37,7 +37,7 @@ module ExceptionNotifier
         message_opts = @message_opts.merge(
           chat_id: @chat_id,
           text: text,
-          parse_mode: 'Markdown',
+          parse_mode: 'MarkdownV2',
         )
 
         message_opts[:username] = options[:username] if options.key?(:username)
@@ -56,26 +56,33 @@ module ExceptionNotifier
 
     private
 
+    def escape_markdown(text)
+      return '' if text.nil?
+
+      text.to_s.gsub(/([_*\[\]()~`>#+\-=|{}.!])/, '\\\\\1')
+    end
+
     def format_message(exception, clean_message, options)
       text, data = information_from_options(exception.class, options)
       backtrace = clean_backtrace(exception) if exception.backtrace
 
       text += "\n\n*Exception:* #{clean_message}"
-      text += "\n\n*Hostname:* #{Socket.gethostname}"
+      text += "\n\n*Hostname:* #{escape_markdown(Socket.gethostname)}"
 
       if backtrace
-        text += "\n\n*Backtrace:*\n```\n#{backtrace.first(@backtrace_lines).join("\n")}\n```"
+        formatted_backtrace = backtrace.first(@backtrace_lines).map { |line| escape_markdown(line) }.join("\n")
+        text += "\n\n*Backtrace:*\n```\n#{formatted_backtrace}\n```"
       end
 
       unless data.empty?
         deep_reject(data, @ignore_data_if) if @ignore_data_if.is_a?(Proc)
-        data_string = data.map { |k, v| "#{k}: #{v}" }.join("\n")
+        data_string = data.map { |k, v| "#{escape_markdown(k)}: #{escape_markdown(v)}" }.join("\n")
         text += "\n\n*Data:*\n```\n#{data_string}\n```"
       end
 
       if @additional_fields
         @additional_fields.each do |field|
-          text += "\n\n*#{field[:title]}:* #{field[:value]}"
+          text += "\n\n*#{escape_markdown(field[:title])}:* #{escape_markdown(field[:value])}"
         end
       end
 
@@ -91,7 +98,7 @@ module ExceptionNotifier
                        /^[aeiou]/i.match?(exception_class.to_s) ? 'An' : 'A'
                      end
 
-      exception_name = "*#{measure_word}* `#{exception_class}`"
+      exception_name = "*#{measure_word}* `#{escape_markdown(exception_class)}`"
       env = options[:env]
 
       if env.nil?
@@ -102,8 +109,10 @@ module ExceptionNotifier
 
         kontroller = env['action_controller.instance']
         request = "#{env['REQUEST_METHOD']} <#{env['REQUEST_URI']}>"
-        text = "#{exception_name} *occurred while* `#{request}`"
-        text += " *was processed by* `#{kontroller.controller_name}##{kontroller.action_name}`" if kontroller
+        text = "#{exception_name} *occurred while* `#{escape_markdown(request)}`"
+        if kontroller
+          text += " *was processed by* `#{escape_markdown(kontroller.controller_name)}##{escape_markdown(kontroller.action_name)}`"
+        end
         text += "\n"
 
         request_info = {

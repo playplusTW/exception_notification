@@ -81,10 +81,9 @@ module ExceptionNotifier
       end
 
       if @additional_fields
-        additional_string = @additional_fields.map do |field|
-          "#{escape_markdown(field[:title])}: #{escape_markdown(field[:value])}"
-        end.join("\n")
-        text += "\n\n*Additional Info:*\n```\n#{additional_string}\n```"
+        @additional_fields.each do |field|
+          text += "\n\n*#{escape_markdown(field[:title])}:* #{escape_markdown(field[:value])}"
+        end
       end
 
       text
@@ -106,7 +105,8 @@ module ExceptionNotifier
         data = options[:data] || {}
         text = "#{exception_name} *occurred in background*\n"
       else
-        data = (env['exception_notifier.exception_data'] || {}).merge(options[:data] || {})
+        env['exception_notifier.exception_data'] || {}
+        data = options[:data] || {}
 
         kontroller = env['action_controller.instance']
         request = "#{env['REQUEST_METHOD']} <#{env['REQUEST_URI']}>"
@@ -119,6 +119,8 @@ module ExceptionNotifier
         request_info = {
           'Request' => "#{env['REQUEST_METHOD']} #{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
           'Parameters' => env['action_controller.instance']&.params&.to_unsafe_h,
+          'Current User ID' => data[:current_user_id],
+          'Current Admin ID' => data[:current_admin_id],
           'Request IP' => env['REMOTE_ADDR'],
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }

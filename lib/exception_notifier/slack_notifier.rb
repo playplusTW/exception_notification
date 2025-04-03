@@ -60,6 +60,28 @@ module ExceptionNotifier
       [color: @color, text: text, fields: fields, mrkdwn_in: %w[text fields]]
     end
 
+    def fields(clean_message, backtrace, data)
+      fields = [
+        { title: 'Exception', value: clean_message },
+        { title: 'Hostname', value: Socket.gethostname },
+      ]
+
+      if backtrace
+        formatted_backtrace = "```#{backtrace.first(@backtrace_lines).join("\n")}```"
+        fields << { title: 'Backtrace', value: formatted_backtrace }
+      end
+
+      unless data.empty?
+        deep_reject(data, @ignore_data_if) if @ignore_data_if.is_a?(Proc)
+        data_string = data.map { |k, v| "#{k}: #{v}" }.join("\n")
+        fields << { title: 'Data', value: "```#{data_string}```" }
+      end
+
+      fields.concat(@additional_fields) if @additional_fields
+
+      fields
+    end
+
     def information_from_options(exception_class, options)
       errors_count = options[:accumulated_errors_count].to_i
 
@@ -79,7 +101,8 @@ module ExceptionNotifier
         data = options[:data] || {}
         text = "#{exception_name} *occured in background*\n"
       else
-        data = (env['exception_notifier.exception_data'] || {}).merge(options[:data] || {})
+        env['exception_notifier.exception_data'] || {}
+        data = options[:data] || {}
 
         kontroller = env['action_controller.instance']
         request = "#{env['REQUEST_METHOD']} <#{env['REQUEST_URI']}>"
@@ -87,10 +110,11 @@ module ExceptionNotifier
         text += " *was processed by* `#{kontroller.controller_name}##{kontroller.action_name}`" if kontroller
         text += "\n"
 
-        # 加入更多 request 相關資訊
         request_info = {
           'Request' => "#{env['REQUEST_METHOD']} #{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
           'Parameters' => env['action_controller.instance']&.params&.to_unsafe_h,
+          'Current User ID' => data[:current_user_id],
+          'Current Admin ID' => data[:current_admin_id],
           'Request IP' => env['REMOTE_ADDR'],
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }
@@ -99,31 +123,6 @@ module ExceptionNotifier
       end
 
       [text, data]
-    end
-
-    def fields(clean_message, backtrace, data)
-      fields = [
-        { title: 'Exception', value: clean_message },
-        { title: 'Hostname', value: Socket.gethostname },
-      ]
-
-      if backtrace
-        formatted_backtrace = "```#{backtrace.first(@backtrace_lines).join("\n")}```"
-        fields << { title: 'Backtrace', value: formatted_backtrace }
-      end
-
-      unless data.empty?
-        deep_reject(data, @ignore_data_if) if @ignore_data_if.is_a?(Proc)
-        data_string = data.map { |k, v| "#{k}: #{v}" }.join("\n")
-        fields << { title: 'Data', value: "```#{data_string}```" }
-      end
-
-      if @additional_fields
-        additional_string = @additional_fields.map { |field| "#{field[:title]}: #{field[:value]}" }.join("\n")
-        fields << { title: 'Additional Info', value: "```#{additional_string}```" }
-      end
-
-      fields
     end
   end
 end

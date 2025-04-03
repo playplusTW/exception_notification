@@ -489,36 +489,118 @@ Everyone interacting in the ExceptionNotificationTelegram project's codebases, i
 
 # Exception Notification (Fork)
 
-這是 [Exception Notification](https://github.com/kmcphillips/exception_notification) 的 fork 版本，加入了 Telegram notifier 支援。
+這是 [Exception Notification](https://github.com/smartinez87/exception_notification) 的 fork 版本，增加了 Telegram 通知器的支援。
 
-## Installation
+## 安裝
 
-### 使用 Fork 版本
-
-在您的 Gemfile 中加入：
+在你的 Gemfile 中加入：
 
 ```ruby
 gem 'exception_notification',
-    git: 'git@github.com:playplusTW/exception_notification.git',
-    branch: 'main'  # 或您想要使用的分支
+    github: 'playplusTW/exception_notification',
+    branch: 'main'
 ```
 
 然後執行：
 
 ```bash
-$ bundle install
+bundle install
 ```
 
-### 安裝依賴套件
+## 設定
 
-由於 Telegram notifier 需要額外的依賴，請在您的 Gemfile 中加入：
+在你的 Rails 應用程式中，你需要設定 Exception Notification。在 `config/initializers/exception_notification.rb` 中加入：
+
+```ruby
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  telegram: {
+    token: 'YOUR_BOT_TOKEN',
+    chat_id: 'YOUR_CHAT_ID',
+    additional_parameters: {
+      parse_mode: 'MarkdownV2'
+    }
+  }
+```
+
+## 必要依賴
+
+由於這是 fork 版本，你需要手動在 Gemfile 中加入以下依賴：
 
 ```ruby
 gem 'telegram-bot-ruby', '>= 0.19.0'
 ```
 
-然後執行：
+## 使用方式
 
-```bash
-$ bundle install
+### 基本設定
+
+```ruby
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  telegram: {
+    token: 'YOUR_BOT_TOKEN',
+    chat_id: 'YOUR_CHAT_ID'
+  }
 ```
+
+### 進階設定
+
+```ruby
+Rails.application.config.middleware.use ExceptionNotification::Rack,
+  telegram: {
+    token: 'YOUR_BOT_TOKEN',
+    chat_id: 'YOUR_CHAT_ID',
+    username: 'Exception Bot',
+    icon_url: 'https://example.com/icon.png',
+    icon_emoji: ':warning:',
+    backtrace_lines: 10,
+    additional_parameters: {
+      parse_mode: 'MarkdownV2'
+    }
+  }
+```
+
+### 支援的參數
+
+- `token`: Telegram Bot Token（必要）
+- `chat_id`: 目標聊天室 ID（必要）
+- `username`: 機器人顯示名稱
+- `icon_url`: 機器人頭像 URL
+- `icon_emoji`: 機器人頭像 emoji
+- `backtrace_lines`: 堆疊追蹤顯示行數（預設：10）
+- `additional_parameters`: 額外的 Telegram API 參數
+
+## 訊息格式
+
+錯誤通知會包含以下資訊：
+
+- 錯誤類型
+- 錯誤訊息
+- 發生時間
+- 請求資訊（如果有的話）
+  - 請求方法
+  - 請求 URL
+  - 請求參數
+  - IP 位址
+  - 主機名稱
+  - User Agent
+- 堆疊追蹤
+- 環境資訊
+
+## 注意事項
+
+1. 確保你的 Telegram Bot Token 是有效的
+2. 確保 Bot 已經被加入到目標聊天室
+3. 確保 Bot 有發送訊息的權限
+
+## 疑難排解
+
+如果遇到問題，請檢查：
+
+1. Bot Token 是否正確
+2. Chat ID 是否正確
+3. Bot 是否有適當的權限
+4. 網路連接是否正常
+
+## 授權
+
+本專案採用 MIT 授權條款。詳見 [LICENSE](LICENSE) 檔案。

@@ -500,7 +500,7 @@ Everyone interacting in the ExceptionNotificationTelegram project's codebases, i
 ```ruby
 gem 'exception_notification',
     git: 'git@github.com:playplusTW/exception_notification.git',
-    branch: 'master'  # 或您想要使用的分支
+    branch: 'main'  # 或您想要使用的分支
 ```
 
 然後執行：

@@ -90,7 +90,7 @@ module ExceptionNotifier
         # 加入更多 request 相關資訊
         request_info = {
           'Request' => "#{env['REQUEST_METHOD']} #{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
-          'Parameters' => env['action_controller.instance']&.params&.to_h,
+          'Parameters' => env['action_controller.instance']&.params&.to_unsafe_h,
           'Request IP' => env['REMOTE_ADDR'],
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }

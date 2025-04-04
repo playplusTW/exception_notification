@@ -130,10 +130,8 @@ module ExceptionNotifier
         text += "\n"
 
         request_info = {
-          'Request' => "#{env['REQUEST_METHOD']} #{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
+          'Request' => "#{env['REQUEST_METHOD']} #{env['rack.url_scheme']}://#{env['HTTP_HOST']}#{env['action_controller.instance']&.request&.fullpath || env['REQUEST_URI']}",
           'Parameters' => env['action_controller.instance']&.params&.to_unsafe_h,
-          'Current User ID' => data[:current_user_id],
-          'Current Admin ID' => data[:current_admin_id],
           'Request IP' => env['REMOTE_ADDR'],
           'Request User Agent' => env['HTTP_USER_AGENT'],
         }.reject { |_, v| v.nil? || v.empty? }
